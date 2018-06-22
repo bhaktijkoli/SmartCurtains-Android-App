@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.bhaktijkoli.smartcurtains.utils.NsdUtils;
 
@@ -16,13 +18,16 @@ import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final String TAG = "MainActivity";
     private ProgressDialog progressDialog;
     private NsdUtils nsdUtils;
     private Boolean webSocketConnected = false;
     private WebSocket webSocket;
+    private Button btnOpen;
+    private Button btnClose;
+
     private OkHttpClient okHttpClient = new OkHttpClient();
 
 
@@ -30,6 +35,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        btnOpen = (Button) findViewById(R.id.btnOpen);
+        btnClose = (Button) findViewById(R.id.btnClose);
+
+        btnOpen.setOnClickListener(this);
+        btnClose.setOnClickListener(this);
+
         nsdUtils = new NsdUtils(this);
         nsdUtils.setNsdUtilListner(new NsdUtils.NsdUtilListner() {
             @Override
@@ -55,6 +67,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         nsdUtils.scan();
+    }
+
+    @Override
+    public void onClick(View view) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("type", "TOGGLE");
+            if(view == btnOpen) {
+                jsonObject.put("channel", "1");
+            } else if(view == btnClose) {
+                jsonObject.put("channel", "2");
+            }
+            webSocket.send(jsonObject.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private final class EchoWebSocketListener extends WebSocketListener {
