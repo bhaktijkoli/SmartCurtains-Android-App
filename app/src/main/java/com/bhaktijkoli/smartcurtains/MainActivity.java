@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
@@ -18,7 +19,7 @@ import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnTouchListener, View.OnClickListener {
 
     private final String TAG = "MainActivity";
     private ProgressDialog progressDialog;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private WebSocket webSocket;
     private Button btnOpen;
     private Button btnClose;
+    private Button btnStop;
 
     private OkHttpClient okHttpClient = new OkHttpClient();
 
@@ -38,9 +40,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btnOpen = (Button) findViewById(R.id.btnOpen);
         btnClose = (Button) findViewById(R.id.btnClose);
+        btnStop = (Button) findViewById(R.id.btnStop);
 
         btnOpen.setOnClickListener(this);
         btnClose.setOnClickListener(this);
+        btnStop.setOnClickListener(this);
+
 
         nsdUtils = new NsdUtils(this);
         nsdUtils.setNsdUtilListner(new NsdUtils.NsdUtilListner() {
@@ -69,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         nsdUtils.scan();
     }
 
-    @Override
     public void onClick(View view) {
         JSONObject jsonObject = new JSONObject();
         try {
@@ -78,11 +82,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 jsonObject.put("channel", "1");
             } else if(view == btnClose) {
                 jsonObject.put("channel", "2");
+            } else if(view == btnStop) {
+                jsonObject.put("channel", "3");
             }
             webSocket.send(jsonObject.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        return true;
     }
 
     private final class EchoWebSocketListener extends WebSocketListener {
